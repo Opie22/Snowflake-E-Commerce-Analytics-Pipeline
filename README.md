@@ -69,14 +69,22 @@ Olist CSVs → AWS S3 → Snowflake (COPY INTO) → dbt (staging → intermediat
 - Snowflake account (free trial at [snowflake.com](https://snowflake.com))
 - AWS account with an S3 bucket in the same region as Snowflake
 - Python 3.11+
-- dbt-snowflake: `pip install dbt-snowflake`
 
-### 1. Clone the repo
+### 1. Clone the repo and set up the virtual environment
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/Snowflake-E-Commerce-Analytics-Pipeline.git
 cd Snowflake-E-Commerce-Analytics-Pipeline
+
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# Install all dependencies
+pip install dbt-snowflake streamlit>=1.40.0 pandas>=2.0.0 plotly>=5.20.0 boto3 python-dotenv
 ```
+
+> **Note:** Always activate the venv (`source .venv/bin/activate`) before running any `dbt` or `streamlit` commands.
 
 ### 2. Configure environment variables
 
@@ -90,17 +98,18 @@ cp .env.example .env
 Open each file in the Snowflake UI or SnowSQL and run in order:
 
 ```
-snowflake_setup/01_database_warehouse.sql
-snowflake_setup/02_roles_grants.sql
-snowflake_setup/03_storage_integration.sql
-snowflake_setup/04_tasks.sql
+snowflake_setup/01_database_warehouse.sql   -- database, schemas, warehouse
+snowflake_setup/02_roles_grants.sql         -- RBAC roles + grants
+snowflake_setup/03_storage_integration.sql  -- S3 storage integration + external stage
+snowflake_setup/04_tasks.sql               -- scheduled daily load task
+snowflake_setup/05_network_policy.sql      -- required for external connections on trial accounts
 ```
 
 ### 4. Download Olist data and upload to S3
 
 ```bash
-# Download CSVs from Kaggle and place them in /data
-pip install -r ingest/requirements.txt
+# Download CSVs from Kaggle and place them in data/
+# https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce
 python ingest/upload_to_s3.py
 ```
 
@@ -121,8 +130,8 @@ dbt deps      # install packages
 ### 7. Build dbt models
 
 ```bash
-dbt build     # runs all models + tests
-dbt docs generate && dbt docs serve   # lineage graph at localhost:8080
+dbt build                    # runs all models + tests (55 total)
+dbt compile --write-catalog  # generate catalog.json for docs (dbt-fusion 2.0)
 ```
 
 ### 8. Run the Streamlit dashboard
@@ -157,8 +166,6 @@ The workflow in `.github/workflows/ci.yml` runs `dbt build --target ci` against 
 ---
 
 ## What I Learned
-
-> *(Fill this in as you complete each phase — great for interviews.)*
 
 - Designed a three-role RBAC model (LOADER / TRANSFORMER / REPORTER) mirroring production data warehouse governance.
 - Implemented incremental loads using Snowflake Tasks and dbt's `incremental` materialization.

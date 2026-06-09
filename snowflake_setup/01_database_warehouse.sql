@@ -23,9 +23,13 @@ CREATE DATABASE IF NOT EXISTS ECOMMERCE_DB
 CREATE SCHEMA IF NOT EXISTS ECOMMERCE_DB.RAW
     COMMENT = 'Raw tables loaded from S3 external stage';
 
--- ANALYTICS: dbt-managed transformation layer
+-- STAGING: dbt staging views (stg_* models)
+CREATE SCHEMA IF NOT EXISTS ECOMMERCE_DB.STAGING
+    COMMENT = 'dbt staging views — renamed and cast source columns';
+
+-- ANALYTICS: dbt mart layer (fact + dimension tables)
 CREATE SCHEMA IF NOT EXISTS ECOMMERCE_DB.ANALYTICS
-    COMMENT = 'dbt staging, intermediate, and mart models';
+    COMMENT = 'dbt mart models — fct_*, dim_*, and aggregates';
 
 -- CI: ephemeral schema for GitHub Actions CI runs
 CREATE SCHEMA IF NOT EXISTS ECOMMERCE_DB.CI
