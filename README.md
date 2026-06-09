@@ -20,7 +20,15 @@ Olist CSVs → AWS S3 → Snowflake (COPY INTO) → dbt (staging → intermediat
 | Visualization | Streamlit | Python dashboard |
 | CI | GitHub Actions | `dbt build` on every pull request |
 
-> **Architecture diagram** — see `docs/architecture.png` (add after Phase 1).
+---
+
+## Dashboard
+
+![Dashboard Overview](images/Streamlit_Dashboard_1.png)
+
+![Charts](images/Streamlit_Dashboard_2.png)
+
+![LTV & Payments](images/Streamlit_Dashboard_3.png)
 
 ---
 
@@ -49,7 +57,7 @@ Olist CSVs → AWS S3 → Snowflake (COPY INTO) → dbt (staging → intermediat
 ├── dashboard/                      # Streamlit app
 │   ├── app.py
 │   └── requirements.txt
-└── docs/                           # Architecture diagrams + screenshots
+└── images/                         # Dashboard screenshots
 ```
 
 ---
