@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: "Central fact table — one row per order with payment totals and delivery metrics."
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: total_payment_value
+        tests: [not_null]
+
+  - name: dim_customers
+    description: "Customer dimension with lifetime value and order counts."
+    columns:
+      - name: customer_unique_id
+        tests: [unique, not_null]
+
+  - name: dim_products
+    description: "Product dimension with sales aggregates."
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
+
+  - name: monthly_revenue
+    description: "Monthly gross revenue by state. Used by the Streamlit revenue trend chart."
+
+  - name: customer_ltv
+    description: "LTV segmentation across four quartiles."
+    columns:
+      - name: customer_unique_id
+        tests: [unique, not_null]
+      - name: ltv_segment
+        tests:
+          - accepted_values:
+              values: ['High Value', 'Mid-High Value', 'Mid-Low Value', 'Low Value']

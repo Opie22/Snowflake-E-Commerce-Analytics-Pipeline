@@ -1,0 +1,82 @@
+name: dbt CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dbt_project/**'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  dbt-build:
+    name: dbt build (CI schema)
+    runs-on: ubuntu-latest
+
+    env:
+      SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dbt-snowflake
+        run: pip install dbt-snowflake
+
+      - name: Write profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << EOF
+          ecommerce_snowflake:
+            target: ci
+            outputs:
+              ci:
+                type: snowflake
+                account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+                user: ${{ secrets.SNOWFLAKE_USER }}
+                password: ${{ secrets.SNOWFLAKE_PASSWORD }}
+                role: TRANSFORMER
+                database: ECOMMERCE_DB
+                warehouse: ECOMMERCE_WH
+                schema: CI
+                threads: 4
+          EOF
+
+      - name: dbt deps
+        working-directory: dbt_project
+        run: dbt deps
+
+      - name: dbt build (CI target)
+        working-directory: dbt_project
+        run: dbt build --target ci --fail-fast
+
+      - name: dbt docs generate
+        if: success()
+        working-directory: dbt_project
+        run: dbt docs generate --target ci
+
+      # Clean up CI schema after the run so it doesn't accumulate cost
+      - name: Drop CI schema
+        if: always()
+        working-directory: dbt_project
+        run: |
+          python - << 'PYEOF'
+          import snowflake.connector, os
+          conn = snowflake.connector.connect(
+              account  = os.environ["SNOWFLAKE_ACCOUNT"],
+              user     = os.environ["SNOWFLAKE_USER"],
+              password = os.environ["SNOWFLAKE_PASSWORD"],
+              role     = "TRANSFORMER",
+          )
+          conn.cursor().execute("DROP SCHEMA IF EXISTS ECOMMERCE_DB.CI CASCADE")
+          conn.cursor().execute("CREATE SCHEMA IF NOT EXISTS ECOMMERCE_DB.CI")
+          conn.close()
+          print("CI schema reset.")
+          PYEOF

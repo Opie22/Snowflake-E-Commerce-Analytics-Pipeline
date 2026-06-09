@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: "Cleaned orders: timestamps cast, nulls filtered."
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_id
+        tests: [not_null]
+
+  - name: stg_order_items
+    description: "Order line items with prices as numeric."
+    columns:
+      - name: order_id
+        tests: [not_null]
+
+  - name: stg_order_payments
+    description: "Payment records; multiple rows per order are expected."
+    columns:
+      - name: order_id
+        tests: [not_null]
+
+  - name: stg_customers
+    description: "Customer master, deduped on customer_id."
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+
+  - name: stg_products
+    description: "Product catalog with English category names joined in."
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
+
+  - name: stg_sellers
+    columns:
+      - name: seller_id
+        tests: [unique, not_null]

@@ -1,0 +1,32 @@
+# profiles.yml.example
+# Copy this file to ~/.dbt/profiles.yml and fill in your credentials.
+# NEVER commit the real profiles.yml — it contains secrets.
+#
+# dbt docs: https://docs.getdbt.com/docs/core/connect-data-platform/snowflake-setup
+
+ecommerce_snowflake:
+  target: dev
+  outputs:
+
+    dev:
+      type: snowflake
+      account: YOUR_ACCOUNT_IDENTIFIER   # e.g. xy12345.us-east-1
+      user:    YOUR_SNOWFLAKE_USERNAME
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      TRANSFORMER
+      database:  ECOMMERCE_DB
+      warehouse: ECOMMERCE_WH
+      schema:    ANALYTICS              # dbt will use ANALYTICS_<model_schema>
+      threads:   4
+      client_session_keep_alive: false
+
+    ci:
+      type: snowflake
+      account: YOUR_ACCOUNT_IDENTIFIER
+      user:    "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      TRANSFORMER
+      database:  ECOMMERCE_DB
+      warehouse: ECOMMERCE_WH
+      schema:    CI                     # ephemeral CI schema; safe to wipe
+      threads:   4

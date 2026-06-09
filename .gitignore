@@ -1,3 +1,24 @@
+# ── dbt ──────────────────────────────────────────────────────────────────────
+target/
+dbt_packages/
+logs/
+profiles.yml          # real profiles live locally, never commit
+.dbt/
+
+# ── Snowflake / AWS credentials ───────────────────────────────────────────────
+.env
+*.env
+.envrc
+secrets.toml
+.streamlit/secrets.toml
+
+# ── Raw data (large CSVs from Kaggle) ────────────────────────────────────────
+data/
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+
+# ── Byte-compiled / optimized / DLL files ────────────────────────────────────
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

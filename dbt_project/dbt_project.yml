@@ -1,0 +1,32 @@
+name: 'ecommerce_snowflake'
+version: '1.0.0'
+config-version: 2
+
+profile: 'ecommerce_snowflake'
+
+model-paths:  ["models"]
+test-paths:   ["tests"]
+macro-paths:  ["macros"]
+target-path:  "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  ecommerce_snowflake:
+    staging:
+      +schema:       staging
+      +materialized: view        # staging models are lightweight views
+    intermediate:
+      +schema:       intermediate
+      +materialized: ephemeral   # intermediate models are inlined — no physical tables
+    marts:
+      +schema:       analytics
+      +materialized: table       # mart models are persisted tables queried by Streamlit
+      fct_orders:
+        +materialized: incremental
+        +unique_key: order_id
+      customer_ltv:
+        +materialized: table
+
+vars:
+  # Override in CI: dbt build --vars '{"start_date": "2016-01-01"}'
+  start_date: '2016-01-01'
