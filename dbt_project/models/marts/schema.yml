@@ -32,4 +32,5 @@ models:
       - name: ltv_segment
         tests:
           - accepted_values:
-              values: ['High Value', 'Mid-High Value', 'Mid-Low Value', 'Low Value']
+              arguments:
+                values: ['High Value', 'Mid-High Value', 'Mid-Low Value', 'Low Value']

@@ -4,6 +4,16 @@
 with customers as (
     select * from {{ ref('stg_customers') }}
 ),
+
+-- stg_customers has one row per customer_id (order-scoped); a real customer
+-- can place multiple orders and appear multiple times with different customer_ids
+-- but the same customer_unique_id. Deduplicate to one row per unique customer.
+unique_customers as (
+    select *
+    from customers
+    qualify row_number() over (partition by customer_unique_id order by customer_id) = 1
+),
+
 orders as (
     select
         customer_unique_id,
@@ -25,5 +35,5 @@ select
     coalesce(o.lifetime_value, 0) as lifetime_value,
     o.first_order_at,
     o.last_order_at
-from customers c
+from unique_customers c
 left join orders o on c.customer_unique_id = o.customer_unique_id

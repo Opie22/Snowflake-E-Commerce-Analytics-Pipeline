@@ -114,9 +114,10 @@ st.subheader("🏆 Top 10 Product Categories by Revenue")
 
 top_products = query("""
     select
-        product_category,
-        sum(total_item_value) as revenue
-    from ecommerce_db.analytics.int_order_items_with_products
+        category                as product_category,
+        sum(total_revenue)      as revenue
+    from ecommerce_db.analytics.dim_products
+    where category is not null
     group by 1
     order by 2 desc
     limit 10
@@ -144,7 +145,7 @@ with col_left:
         select
             payment_type,
             count(*) as count
-        from ecommerce_db.raw.olist_order_payments
+        from ecommerce_db.staging.stg_order_payments
         group by 1
         order by 2 desc
     """)

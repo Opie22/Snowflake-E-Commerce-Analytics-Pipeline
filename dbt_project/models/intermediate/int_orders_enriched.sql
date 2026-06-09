@@ -31,9 +31,9 @@ enriched as (
         o.carrier_delivered_at,
         o.customer_delivered_at,
         o.estimated_delivery_at,
-        p.total_payment_value,
-        p.payment_count,
-        p.payment_types,
+        coalesce(p.total_payment_value, 0) as total_payment_value,
+        coalesce(p.payment_count, 0)       as payment_count,
+        coalesce(p.payment_types, 'none')  as payment_types,
         datediff('day', o.purchased_at, o.customer_delivered_at)
             as actual_delivery_days,
         datediff('day', o.purchased_at, o.estimated_delivery_at)

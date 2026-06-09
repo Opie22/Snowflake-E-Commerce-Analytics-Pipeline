@@ -1,5 +1,5 @@
 -- =============================================================================
--- 03_storage_integration.sql
+-- 03_storage_integration.sql olist-ecommerce-pipeline-dallen
 -- Creates a STORAGE INTEGRATION so Snowflake can read from S3 without
 -- storing AWS keys inside Snowflake. Also creates the external stage.
 --
@@ -21,8 +21,8 @@ CREATE STORAGE INTEGRATION IF NOT EXISTS S3_ECOMMERCE_INTEGRATION
     TYPE                      = EXTERNAL_STAGE
     STORAGE_PROVIDER          = 'S3'
     ENABLED                   = TRUE
-    STORAGE_AWS_ROLE_ARN      = 'arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/snowflake-s3-role'
-    STORAGE_ALLOWED_LOCATIONS = ('s3://YOUR_BUCKET_NAME/raw/');
+    STORAGE_AWS_ROLE_ARN      = 'arn:aws:iam::156845521562:role/snowflake-s3-role'
+    STORAGE_ALLOWED_LOCATIONS = ('s3://olist-ecommerce-pipeline-dallen/raw/');
 
 -- ── Step 2: Retrieve ARN & External ID for the AWS Trust Policy ───────────────
 -- Copy STORAGE_AWS_IAM_USER_ARN and STORAGE_AWS_EXTERNAL_ID from this output
@@ -36,10 +36,11 @@ GRANT USAGE ON INTEGRATION S3_ECOMMERCE_INTEGRATION TO ROLE LOADER;
 USE ROLE LOADER;
 USE DATABASE ECOMMERCE_DB;
 USE SCHEMA RAW;
-
+USE ROLE ACCOUNTADMIN;
+GRANT CREATE STAGE ON SCHEMA ECOMMERCE_DB.RAW TO ROLE LOADER;
 CREATE STAGE IF NOT EXISTS RAW.OLIST_STAGE
     STORAGE_INTEGRATION = S3_ECOMMERCE_INTEGRATION
-    URL                 = 's3://YOUR_BUCKET_NAME/raw/'
+    URL                 = 's3://olist-ecommerce-pipeline-dallen/raw/'
     FILE_FORMAT         = (
         TYPE             = 'CSV'
         FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -54,3 +55,29 @@ CREATE STAGE IF NOT EXISTS RAW.OLIST_STAGE
 -- ── Step 5: Verify the stage lists your uploaded CSVs ────────────────────────
 -- Run this after uploading the Olist CSVs to S3:
 -- LIST @RAW.OLIST_STAGE;
+SHOW STAGES IN SCHEMA ECOMMERCE_DB.RAW;
+LIST @ECOMMERCE_DB.RAW.OLIST_STAGE;
+
+
+
+
+
+
+
+USE ROLE LOADER;
+USE WAREHOUSE ECOMMERCE_WH;
+USE DATABASE ECOMMERCE_DB;
+USE SCHEMA RAW;
+
+CREATE STAGE IF NOT EXISTS RAW.OLIST_STAGE
+    STORAGE_INTEGRATION = S3_ECOMMERCE_INTEGRATION
+    URL                 = 's3://olist-ecommerce-pipeline-dallen/raw/'
+    FILE_FORMAT         = (
+        TYPE             = 'CSV'
+        FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+        SKIP_HEADER      = 1
+        NULL_IF          = ('NULL', 'null', '')
+        EMPTY_FIELD_AS_NULL = TRUE
+        DATE_FORMAT      = 'AUTO'
+        TIMESTAMP_FORMAT = 'AUTO'
+    );

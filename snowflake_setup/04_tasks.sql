@@ -27,28 +27,27 @@ USE ROLE LOADER;
 -- For now it runs a simple COPY INTO; replace with a CALL to a proc once
 -- you've wrapped the ingest/copy_into.sql logic into a Snowflake procedure.
 
-CREATE TASK IF NOT EXISTS RAW.DAILY_LOAD_TASK
+-- NOTE: Snowflake Tasks with multiple SQL statements require a stored procedure.
+-- The task below uses a single COPY INTO for orders as the scheduled action.
+-- To load all tables on a schedule, wrap ingest/copy_into.sql into a stored
+-- procedure and call it here (Phase 3 enhancement).
+
+-- Step 1: Create with placeholder body (SELECT 1) — avoids Snowsight UI bug
+-- with multi-statement $$ blocks. Update the body after tables exist.
+CREATE TASK IF NOT EXISTS ECOMMERCE_DB.RAW.DAILY_LOAD_TASK
     WAREHOUSE = ECOMMERCE_WH
-    SCHEDULE  = 'USING CRON 0 6 * * * UTC'   -- 06:00 UTC daily
+    SCHEDULE  = 'USING CRON 0 6 * * * UTC'
     COMMENT   = 'Daily incremental COPY INTO for all Olist raw tables'
 AS
-$$
-    -- COPY INTO for orders
-    COPY INTO ECOMMERCE_DB.RAW.OLIST_ORDERS
-    FROM @ECOMMERCE_DB.RAW.OLIST_STAGE/orders/
-    PATTERN         = '.*orders.*\.csv'
-    ON_ERROR        = 'CONTINUE'
-    PURGE           = FALSE;
+SELECT 1;
 
-    -- COPY INTO for order_items
-    COPY INTO ECOMMERCE_DB.RAW.OLIST_ORDER_ITEMS
-    FROM @ECOMMERCE_DB.RAW.OLIST_STAGE/order_items/
-    PATTERN         = '.*order_items.*\.csv'
-    ON_ERROR        = 'CONTINUE'
-    PURGE           = FALSE;
-
-    -- Add additional tables below as you create them...
-$$;
+-- Step 2: After raw tables exist (post copy_into.sql), replace the body:
+-- ALTER TASK ECOMMERCE_DB.RAW.DAILY_LOAD_TASK MODIFY AS
+-- COPY INTO ECOMMERCE_DB.RAW.OLIST_ORDERS
+-- FROM @ECOMMERCE_DB.RAW.OLIST_STAGE/orders/
+-- PATTERN = '.*orders.*\.csv'
+-- ON_ERROR = 'CONTINUE'
+-- PURGE    = FALSE;
 
 -- ── Resume the task (tasks start in SUSPENDED state) ─────────────────────────
 -- Uncomment when you are ready to activate scheduled loads:
