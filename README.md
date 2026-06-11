@@ -2,8 +2,10 @@
 
 ![Snowflake](https://img.shields.io/badge/Snowflake-Cloud_Warehouse-29B5E8?logo=snowflake&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
-![dbt](https://img.shields.io/badge/dbt-1.9-FF694B?logo=dbt&logoColor=white)
-![dbt Tests](https://img.shields.io/badge/dbt_tests-28_passing-4CAF50)
+![dbt](https://img.shields.io/badge/dbt--fusion-2.0-FF694B?logo=dbt&logoColor=white)
+![dbt Tests](https://img.shields.io/badge/dbt_tests-55_passing-4CAF50)
+![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-S3-FF9900?logo=amazonaws&logoColor=white)
 
 A portfolio-ready ELT pipeline that ingests real Brazilian e-commerce data into Snowflake, transforms it with dbt, and surfaces insights through a Streamlit dashboard.
 
